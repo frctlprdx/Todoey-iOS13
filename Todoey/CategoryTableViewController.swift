@@ -8,9 +8,10 @@
 
 import UIKit
 import RealmSwift
+import SwipeCellKit
 
-class CategoryTableViewController: UITableViewController  {
-
+class CategoryTableViewController: SwipeTableViewController {
+    
     let realm = try! Realm()
     
     var categories: Results<Category>?
@@ -18,6 +19,7 @@ class CategoryTableViewController: UITableViewController  {
     override func viewDidLoad() {
         super.viewDidLoad()
         loadCategory()
+        tableView.rowHeight = 60.0
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -25,8 +27,8 @@ class CategoryTableViewController: UITableViewController  {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryItemCell", for: indexPath)
-        cell.textLabel?.text = categories?[indexPath.row].name ?? "No Category Added"
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
+        cell.textLabel?.text = categories?[indexPath.row].name ?? "No Categories Added"
         return cell
     }
     
@@ -42,7 +44,7 @@ class CategoryTableViewController: UITableViewController  {
         }
     }
     
-
+    
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         var textField = UITextField()
         let alert = UIAlertController(title: "Add New Category", message: "", preferredStyle: .alert)
@@ -80,6 +82,18 @@ class CategoryTableViewController: UITableViewController  {
         tableView.reloadData()
     }
     
+    override func updateModel(at indexPath: IndexPath) {
+        if let categoryForDeletion = self.categories?[indexPath.row] {
+            do {
+                try self.realm.write {
+                    self.realm.delete(categoryForDeletion)
+                }
+            } catch {
+                print(error)
+            }
+        }
+    }
+    
 }
 
 extension CategoryTableViewController: UISearchBarDelegate {
@@ -98,3 +112,5 @@ extension CategoryTableViewController: UISearchBarDelegate {
         }
     }
 }
+
+
